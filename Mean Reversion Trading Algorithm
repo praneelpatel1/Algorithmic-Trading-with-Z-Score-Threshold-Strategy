@@ -1,0 +1,116 @@
+from AlgorithmImports import *
+from statsmodels.tsa.stattools import adfuller
+from itertools import combinations
+import numpy as np
+from hurst import compute_Hc
+import statsmodels.api as sm
+
+class AdvancedMeanReversion(QCAlgorithm):
+
+    def Initialize(self):
+        # Setting the start date for the algorithm and initial capital
+        self.SetStartDate(2022, 4, 27)
+        self.SetCash(100000)
+
+        # Configuring strategy parameters
+        self.lookback_period = 30  # Lookback period for historical data
+        self.entry_z_score_threshold = 1.0  # Z-score threshold for entering trades
+        self.exit_z_score_threshold = 0.0  # Z-score threshold for exiting trades
+        self.positions = {}  # Dictionary to track active positions
+        self.adf_threshold = -2.5  # Threshold for the Augmented Dickey-Fuller test
+
+        # Selecting stocks based on specified criteria
+        self.universe = self.SelectPairsBasedOnCriteria()
+        for stock in self.universe:
+            # Adding each stock in the universe to the algorithm
+            self.AddEquity(stock, Resolution.Minute)
+
+    def OnData(self, data: Slice):
+        # Iterating over all unique pairs in the universe
+        for stock1, stock2 in combinations(self.universe, 2):
+            # Calculating the spread and its statistics for each pair
+            spread = self.CalculateSpread(stock1, stock2)
+            spread_mean, spread_std = self.CalculateSpreadStats(spread)
+
+            # Performing the Augmented Dickey-Fuller test on the spread
+            adf_result = adfuller(spread, maxlag=1)
+            if adf_result[0] < self.adf_threshold:
+                # If spread is stationary, proceed with mean reversion strategy
+                z_score = (spread[-1] - spread_mean) / spread_std
+                self.EvaluatePositions(stock1, stock2, z_score)
+                hurst_exponent = self.CalculateHurstExponent(spread)
+                half_life = self.CalculateHalfLife(spread)
+
+    def CalculateSpread(self, stock1, stock2):
+        # Retrieving historical prices for the two stocks
+        price1 = self.History(stock1, self.lookback_period, Resolution.Daily)['close']
+        price2 = self.History(stock2, self.lookback_period, Resolution.Daily)['close']
+
+        # Calculating log returns for both stocks
+        returns1 = np.log(price1 / price1.shift(1)).dropna()
+        returns2 = np.log(price2 / price2.shift(1)).dropna()
+
+        # Determining the spread as the difference in log returns
+        spread = returns1 - returns2
+        return spread.values
+
+    def CalculateHurstExponent(self, spread):
+        # Calculating the Hurst exponent for the spread
+        H, c, data = compute_Hc(spread)
+        return H
+
+    def CalculateHalfLife(self, spread):
+        # Calculating the half-life of the spread
+        spread_lagged = np.roll(spread, 1)[1:]
+        spread_diff = spread[1:] - spread_lagged
+
+        spread_diff_lagged = np.roll(spread_diff, 1)[1:]
+        spread_diff_lagged = sm.add_constant(spread_diff_lagged)
+
+        model = sm.OLS(spread_diff[1:], spread_diff_lagged)
+        result = model.fit()
+        half_life = -np.log(2) / result.params[1]
+        return half_life
+
+    def CalculateSpreadStats(self, spread):
+        # Computing the mean and standard deviation of the spread
+        spread_mean = np.mean(spread)
+        spread_std = np.std(spread)
+        return spread_mean, spread_std
+
+    def EvaluatePositions(self, stock1, stock2, z_score):
+        # Evaluating positions for potential entry or exit
+        if (stock1, stock2) in self.positions:
+            if abs(z_score) < self.exit_z_score_threshold:
+                # Exiting positions if Z-score is below the exit threshold
+                self.Liquidate(stock1)
+                self.Liquidate(stock2)
+                del self.positions[(stock1, stock2)]
+        else:
+            # Assessing conditions for new positions
+            if z_score > self.entry_z_score_threshold:
+                # Opening positions based on the Z-score
+                self.SetHoldings(stock1, -0.15)  # Short position in stock1
+                self.SetHoldings(stock2, 0.15)   # Long position in stock2
+                self.positions[(stock1, stock2)] = (-0.15, 0.15)
+            elif z_score < -self.entry_z_score_threshold:
+                self.SetHoldings(stock1, 0.15)   # Long position in stock1
+                self.SetHoldings(stock2, -0.15)  # Short position in stock2
+                self.positions[(stock1, stock2)] = (0.15, -0.15)
+
+    def SelectPairsBasedOnCriteria(self):
+        # Defining the universe of stocks based on specific criteria
+        return ["VICI", "CP", "GOOG", "MSFT", "AAPL", "AMZN", "META", "V", "MA", "BRK.A", "JNJ", "UNH", "PG", "PEP", "KO", "WMT", "COST"]
+
+class SECReportAlgorithm(QCAlgorithm):
+    def Initialize(self) -> None:
+        # Initializing the SEC Report Algorithm
+        self.SetStartDate(2019, 1, 1)
+        self.SetEndDate(2023, 11, 2)
+        self.SetCash(100000)
+
+        # Adding stock and SEC report data
+        self.symbol = self.AddEquity("AAPL", Resolution.Minute).Symbol
+        self.report_8k_symbol = self.AddData(SECReport8K, self.symbol).Symbol
+        self.report_10k_symbol = self.AddData(SECReport10K, self.symbol).Symbol
+        self.report_10q_symbol = self.AddData(SECReport10Q, self.symbol).Symbol
