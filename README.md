@@ -1,6 +1,6 @@
 # Algorithmic-Trading-with-Z-Score-Threshold-Strategy
 
-This project is a trading algorithm designed for QuantConnect's Lean Algorithm Framework. It combines the concepts of pairs trading and SEC report analysis to create a robust trading strategy, particularly tailored for investment in major stocks like Google, Microsoft, Apple, Amazon, and more.
+This project is a trading algorithm designed for QuantConnect's Lean Algorithm Framework. It utilizes the concepts of pairs trading and incorporates various statistical concepts such as the Augmented Dickey-Fuller test, half-life calculation, and Hurst exponent.
 
 ### Key Features:
 
