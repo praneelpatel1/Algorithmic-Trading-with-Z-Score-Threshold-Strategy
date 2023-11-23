@@ -1,3 +1,6 @@
+# This code automates pairs trading in QuantConnect, selecting stock pairs, calculating spreads, and managing positions based on statistical measures. 
+# The goal is to profit from price deviations and their eventual return to the mean.
+
 from AlgorithmImports import *
 from statsmodels.tsa.stattools import adfuller
 from itertools import combinations
