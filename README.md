@@ -1,6 +1,6 @@
 # Algorithmic-Trading-with-Z-Score-Threshold-Strategy
 
-This project is a trading algorithm designed for QuantConnect's Lean Algorithm Framework. This project combines the concepts of pairs trading and SEC report analysis to create a robust trading strategy, particularly tailored for investment in major stocks like Google, Microsoft, Apple, Amazon, and more.
+This project is a trading algorithm designed for QuantConnect's Lean Algorithm Framework. It combines the concepts of pairs trading and SEC report analysis to create a robust trading strategy, particularly tailored for investment in major stocks like Google, Microsoft, Apple, Amazon, and more.
 
 ### Key Features:
 
@@ -28,4 +28,4 @@ Running the Algorithm: Deploy the algorithm on QuantConnect's platform or locall
 3. statsmodels Documentation: [Statsmodels](https://www.statsmodels.org/stable/index.html)
 4. Understanding Pairs Trading: [Investopedia - Pairs Trading](https://www.investopedia.com/terms/p/pairstrade.asp) 
 
-This project aims to provide a sophisticated yet accessible approach to algorithmic trading, leveraging both quantitative analysis and financial report insights. Whether you're a seasoned trader or new to algorithmic trading, "QuantitativePairsTrading-SECAnalysis" offers a solid foundation for exploring advanced trading strategies. I plan on building this project to use more advanced statistical methods. Additionally, I hope to incorporate GenerativeAI into the project. I believe this could be particularly beneficial for the stock selection aspect of the project. Advanced AI models would be able to parse through financials, as well as news reports and trends, allowing the algorithm to perform a more holistic assessment of companies.
+This project aims to provide a sophisticated yet accessible approach to algorithmic trading, leveraging both quantitative analysis and financial report insights. It is a simple yet incredibly captivating introduction for exploring advanced trading strategies. I plan on building this project to use more advanced statistical methods. Additionally, I hope to incorporate GenerativeAI into the project. I believe this could be particularly beneficial for the stock selection aspect of the project. Advanced AI models would be able to parse through financials, as well as news reports and trends, allowing the algorithm to perform a more holistic assessment of companies.
